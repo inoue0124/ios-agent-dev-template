@@ -91,44 +91,76 @@ fi
 install_with_brew fastlane
 install_with_brew gh
 
-# Optional: Node.js
-info "=== オプションツールの確認 ==="
-if check_command node; then
-    node --version || true
-else
-    warn "Node.js が見つかりません。XcodeBuildMCP を利用する場合は brew install node でインストールしてください。"
+# ============================================================
+# 3. MCP server auto-setup
+# ============================================================
+info "=== MCP サーバーセットアップ ==="
+
+install_with_brew node
+if ! check_command docker; then
+    info "Docker をインストールしています..."
+    if ! brew install --cask docker; then
+        warn "Docker のインストールに失敗しました。https://www.docker.com から手動でインストールしてください。"
+    else
+        success "Docker をインストールしました"
+    fi
 fi
 
-# Optional: Docker
-if check_command docker; then
-    docker --version || true
+SETTINGS_DIR="$PROJECT_DIR/.claude"
+SETTINGS_FILE="$SETTINGS_DIR/settings.json"
+
+# Skip if settings.json already contains mcpServers
+if [ -f "$SETTINGS_FILE" ] && grep -q '"mcpServers"' "$SETTINGS_FILE"; then
+    info ".claude/settings.json に既存の MCP 設定が見つかりました。スキップします。"
 else
-    warn "Docker が見つかりません。xcodeproj-mcp-server を利用する場合はインストールしてください。"
+    mkdir -p "$SETTINGS_DIR"
+    cat > "$SETTINGS_FILE" << 'SETTINGS_EOF'
+{
+  "mcpServers": {
+    "XcodeBuildMCP": {
+      "command": "npx",
+      "args": ["-y", "xcodebuildmcp@latest", "mcp"]
+    },
+    "xcodeproj": {
+      "command": "docker",
+      "args": ["run", "--pull=always", "--rm", "-i", "-v", "$PWD:/workspace", "ghcr.io/giginet/xcodeproj-mcp-server:latest", "/workspace"]
+    }
+  }
+}
+SETTINGS_EOF
+    success "XcodeBuildMCP + xcodeproj を .claude/settings.json に設定しました"
 fi
 
 # ============================================================
-# 3. ios-claude-plugins installation
+# 4. ios-claude-plugins installation
 # ============================================================
 info "=== ios-claude-plugins ==="
 if check_command claude; then
-    info "ios-claude-plugins のインストールは Claude Code 内で以下を実行してください:"
-    echo ""
-    echo "  /plugin marketplace add inoue0124/ios-claude-plugins"
-    echo ""
+    info "ios-claude-plugins マーケットプレースを登録しています..."
+    if claude plugin marketplace add inoue0124/ios-claude-plugins 2>/dev/null; then
+        success "マーケットプレースを登録しました"
+        info "プラグインをインストールしています..."
+        PLUGIN_FAILED=false
+        for plugin in ios-architecture team-conventions swift-code-quality swift-testing github-workflow code-review-assist ios-onboarding feature-module-gen ios-distribution feature-implementation; do
+            if claude plugin install "$plugin" --scope project 2>/dev/null; then
+                success "$plugin をインストールしました"
+            else
+                warn "$plugin のインストールに失敗しました"
+                PLUGIN_FAILED=true
+            fi
+        done
+        if [ "$PLUGIN_FAILED" = true ]; then
+            warn "一部プラグインのインストールに失敗しました。Claude Code 内で /plugin marketplace add inoue0124/ios-claude-plugins を実行してください。"
+        fi
+    else
+        warn "マーケットプレースの登録に失敗しました。Claude Code 内で以下を実行してください:"
+        echo ""
+        echo "  /plugin marketplace add inoue0124/ios-claude-plugins"
+        echo ""
+    fi
 else
     warn "Claude Code が見つかりません。npm install -g @anthropic-ai/claude-code でインストールしてください。"
 fi
-
-# ============================================================
-# 4. MCP server setup guidance
-# ============================================================
-info "=== MCP サーバー ==="
-echo ""
-echo "  以下のコマンドで MCP サーバーを追加できます（推奨）:"
-echo ""
-echo "  claude mcp add XcodeBuildMCP -- npx -y xcodebuildmcp@latest mcp"
-echo "  claude mcp add xcodeproj -- docker run --pull=always --rm -i -v \$PWD:/workspace ghcr.io/giginet/xcodeproj-mcp-server:latest /workspace"
-echo ""
 
 # ============================================================
 # 5. Project generation
