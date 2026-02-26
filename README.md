@@ -48,26 +48,22 @@ claude
 
 `scripts/setup.sh` は以下を順に実行します。
 
-1. **開発ツールのインストール**（未インストールのもののみ）
+1. **前提条件の確認** — Xcode / Command Line Tools / Homebrew
+2. **開発ツールのインストール**（未インストールのもののみ）
    - XcodeGen（project.yml から .xcodeproj を生成）
    - Mint（Swift 製 CLI ツールのバージョン管理）
    - SwiftLint / SwiftFormat（Mint 経由）
    - Fastlane（CI/CD 自動化・証明書管理・配信）
    - gh CLI（GitHub CLI）
-
-2. **ios-claude-plugins のインストール**
-   - プラグインストアからのプラグイン一括追加
-
-3. **MCP サーバーの設定**
-   - XcodeBuildMCP — ビルド・テスト実行・シミュレータ操作
-   - xcodeproj-mcp-server — Xcode プロジェクトファイル操作
-
-4. **プロジェクト生成**
+3. **MCP サーバーの自動セットアップ**
+   - Node.js / Docker を自動インストール
+   - `.claude/settings.json` に XcodeBuildMCP / xcodeproj-mcp-server を設定
+4. **ios-claude-plugins のインストール**
+   - マーケットプレース登録 + 全10プラグインを自動インストール
+5. **プロジェクト生成**
    - XcodeGen で project.yml から .xcodeproj を生成
    - SPM パッケージの解決
-   - Git hooks のインストール
-
-> Node.js（XcodeBuildMCP 用）と Docker（xcodeproj-mcp-server 用）は必須ではありませんが、インストールされていない場合は警告を表示します。
+6. **Git hooks のインストール** — pre-commit / commit-msg
 
 ## セットアップ後の開発ワークフロー
 
