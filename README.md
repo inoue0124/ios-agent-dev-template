@@ -10,7 +10,7 @@ iOS アプリ開発を Claude Code（AI エージェント）と共に進める�
 
 - **ビルド可能な SwiftUI + MVVM のベースアプリ** — サンプル Feature Module 付きで、セットアップ直後にビルド・実行できる
 - **iOS 開発ツールの自動セットアップ** — XcodeGen、SwiftLint、SwiftFormat、Fastlane、Mint、gh CLI を一括インストール
-- **[ios-claude-plugins](https://github.com/inoue0124/ios-claude-plugins) の導入** — アーキテクチャガード、コード品質チェック、テスト生成、コードレビュー支援、スペック駆動実装など iOS チーム開発を包括サポートするプラグイン群
+- **[ios-claude-plugins](https://github.com/inoue0124/ios-claude-plugins) の導入** — アーキテクチャガード、コード品質チェック、テスト生成、コードレビュー支援など 9 つのプラグイン
 - **MCP サーバーの設定** — XcodeBuildMCP / xcodeproj-mcp-server でビルド・テスト・プロジェクト操作を AI エージェントから直接実行可能に
 - **チーム開発の基盤** — GitHub テンプレート、CI ワークフロー、pre-commit hook、コーディング規約設定
 
@@ -56,7 +56,7 @@ claude
    - gh CLI（GitHub CLI）
 
 2. **ios-claude-plugins のインストール**
-   - プラグインストアからのプラグイン一括追加
+   - プラグインストアからのプラグイン一括追加（9 種）
 
 3. **MCP サーバーの設定**
    - XcodeBuildMCP — ビルド・テスト実行・シミュレータ操作
@@ -73,37 +73,26 @@ claude
 
 セットアップ完了後、`claude` コマンドで AI エージェントと対話しながら開発を進められます。
 
-### 新機能の実装フロー（推奨）
-
-`/implement-feature` で要件定義から実装までをスペック駆動で一気通貫に進められます。
+### 日常の開発フロー
 
 ```
-1. /implement-feature で実装ワークフローを開始
-   ↓ 要件定義書の生成（requirements-gen）— 機能要件・非機能要件・受け入れ条件を整理
-   ↓ 詳細設計書の生成（design-gen）— MVVM 設計・モジュール構成・API 設計
-   ↓ タスクリストの生成（task-gen）— 詳細設計から実装タスクを分解
-2. 各タスクを順に実装
-   ↓ アーキテクチャガード（ios-architecture）が MVVM 準拠を自動チェック
-   ↓ コード品質チェック（swift-code-quality）が lint / format を実行
-   ↓ テスト生成（swift-testing）がユニットテストを自動生成
-3. コミット時に pre-commit hook が最終チェック
-4. PR 作成時にレビュー支援（code-review-assist）が差分を分析
+claude で新機能の実装を依頼
+  ↓ アーキテクチャガード（ios-architecture）が MVVM 準拠を自動チェック
+  ↓ コード品質チェック（swift-code-quality）が lint / format を実行
+  ↓ テスト生成（swift-testing）がユニットテストを自動生成
+  ↓ コミット時に pre-commit hook が最終チェック
+  ↓ PR 作成時にレビュー支援（code-review-assist）が差分を分析
 ```
 
-### 日常の開発でよく使うコマンド
+### よく使うコマンド例
 
 | やりたいこと | Claude への指示例 |
 |---|---|
-| 新機能をスペック駆動で実装 | `/implement-feature` |
-| Feature Module の雛形を生成 | `/new-feature` |
+| 新しい Feature Module を追加 | 「ログイン画面の Feature Module を作って」 |
 | テストを書く | 「LoginViewModel のユニットテストを生成して」 |
-| コード品質チェック | `/quality-check` |
 | コードレビュー | `/pr-review` |
 | PR を作成 | `/pr-create` |
-| Issue を作成 | `/issue-create` |
 | アーキテクチャ監査 | `/arch-audit` |
-| 規約チェック | `/convention-check` |
-| 新メンバー向けガイド生成 | `/onboard` |
 
 ## ディレクトリ構成
 
@@ -173,25 +162,17 @@ claude
 
 [ios-claude-plugins](https://github.com/inoue0124/ios-claude-plugins) から以下のプラグインが導入されます。
 
-### Tier 1: 日常の開発サイクルで毎日使うもの
-
 | プラグイン | 説明 |
 |---|---|
-| ios-architecture | MVVM 構造チェック・レイヤー依存検査・DI 提案 |
-| team-conventions | コーディング規約・命名規則の自動検査・強制 |
+| ios-architecture | MVVM パターンの構造チェック・レイヤー間依存方向検査 |
+| team-conventions | コーディング規約・命名規則・ブランチ運用ルールの自動検査 |
 | swift-code-quality | SwiftLint / SwiftFormat による静的解析・構文チェック |
 | swift-testing | テスト生成・実行・カバレッジ分析 |
-| github-workflow | 構造化 Issue 作成・差分解析 PR 作成 |
+| github-workflow | 構造化 issue 作成・差分解析に基づく PR 作成 |
 | code-review-assist | PR 差分分析・レビューコメント生成・影響範囲特定 |
-
-### Tier 2: プロジェクト構築・配信フェーズで使うもの
-
-| プラグイン | 説明 |
-|---|---|
-| ios-onboarding | プロジェクト構造解説・用語集生成・変更要約 |
-| feature-module-gen | SwiftUI + MVVM Feature Module 雛形一式生成 |
-| ios-distribution | アーカイブビルド・TestFlight アップロード自動化 |
-| feature-implementation | 要件定義・詳細設計・タスクリストによるスペック駆動フィーチャー実装 |
+| ios-onboarding | プロジェクト構造の自動解説・用語集・変更要約 |
+| feature-module-gen | SwiftUI + MVVM の Feature Module 雛形一式生成 |
+| ios-distribution | TestFlight 配信・署名の自動化 |
 
 ## Git hooks
 
