@@ -141,9 +141,9 @@ xcodebuild -resolvePackageDependencies 2>/dev/null || warn "SPM パッケージ�
 # 6. Git hooks installation
 # ============================================================
 info "=== Git hooks ==="
-if [ -d "$PROJECT_DIR/hooks" ]; then
-    git config core.hooksPath hooks
-    success "Git hooks を有効化しました（hooks/）"
+if [ -d "$PROJECT_DIR/scripts/hooks" ]; then
+    git config core.hooksPath scripts/hooks
+    success "Git hooks を有効化しました（scripts/hooks/）"
 fi
 
 # ============================================================

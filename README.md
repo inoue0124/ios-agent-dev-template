@@ -126,7 +126,10 @@ claude
 │   ├── setup.sh                       # 初回セットアップ
 │   ├── clean.sh                       # キャッシュクリア
 │   ├── bootstrap.sh                   # 依存解決・プロジェクト再生成
-│   └── lint.sh                        # SwiftFormat + SwiftLint 一括実行
+│   ├── lint.sh                        # SwiftFormat + SwiftLint 一括実行
+│   └── hooks/
+│       ├── pre-commit                 # コミット前の自動 lint
+│       └── commit-msg                 # Conventional Commits チェック
 ├── fastlane/
 │   ├── Fastfile                       # レーン定義（build, test, beta）
 │   └── Appfile                        # App ID / Apple ID 設定
