@@ -53,7 +53,10 @@ claude
 4. **プロジェクト初期ファイルの配置**
    - CLAUDE.md（エージェントへの指示書）
    - .swiftlint.yml / .swiftformat
+   - Mintfile（SwiftLint / SwiftFormat のバージョン固定）
    - .gitignore
+   - GitHub テンプレート（Issue / PR）
+   - Git hooks（pre-commit）
 
 ## 前提条件
 
@@ -106,6 +109,40 @@ claude
 - `~/Library/Caches/org.swift.swiftpm` — SPM グローバルキャッシュ
 - `Package.resolved` の削除 + 再解決
 - `.xcodeproj` の再生成（XcodeGen）
+
+## テンプレートファイル
+
+クローン時に含まれるテンプレートファイル一覧。
+
+### GitHub テンプレート
+
+| ファイル | 内容 |
+|---|---|
+| `.github/ISSUE_TEMPLATE/bug_report.md` | バグ報告テンプレート |
+| `.github/ISSUE_TEMPLATE/feature_request.md` | 機能要望テンプレート |
+| `.github/ISSUE_TEMPLATE/task.md` | タスクテンプレート |
+| `.github/PULL_REQUEST_TEMPLATE.md` | PR テンプレート（変更概要・テスト計画・チェックリスト） |
+
+### Git hooks
+
+| フック | 内容 |
+|---|---|
+| `pre-commit` | SwiftFormat + SwiftLint を自動実行（`scripts/lint.sh` を呼び出し） |
+| `commit-msg` | コミットメッセージのフォーマットチェック（Conventional Commits） |
+
+> **ios-claude-plugins との役割分担について**
+>
+> ios-claude-plugins の `swift-code-quality` プラグインも SwiftLint / SwiftFormat を実行しますが、それは **Claude がコード編集中に品質を担保する**ためのものです。一方、pre-commit hook は **人間が手動でコミットする際のセーフティネット**として機能します。同じツールを使いますが実行タイミングと目的が異なるため、両方を併用する設計としています。
+
+### プロジェクト設定ファイル
+
+| ファイル | 内容 |
+|---|---|
+| `CLAUDE.md` | AI エージェントへの指示書（アーキテクチャ方針・コーディング規約） |
+| `Mintfile` | SwiftLint / SwiftFormat のバージョン固定 |
+| `.swiftlint.yml` | SwiftLint ルール設定 |
+| `.swiftformat` | SwiftFormat ルール設定 |
+| `.gitignore` | Xcode / SPM / DerivedData / Fastlane 等の除外設定 |
 
 ## ライセンス
 
