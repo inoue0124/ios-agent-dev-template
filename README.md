@@ -6,74 +6,157 @@ iOS アプリ開発を Claude Code（AI エージェント）と共に進める�
 
 ## 概要
 
-このテンプレートは以下を一括でセットアップします。
+このテンプレートは以下を提供します。
 
-- **iOS 開発の基本環境** — Xcode、XcodeGen、SwiftLint、SwiftFormat、Fastlane、Mint、gh CLI など必要なツールの検証・インストール
-- **[ios-claude-plugins](https://github.com/inoue0124/ios-claude-plugins) の導入** — アーキテクチャガード、コード品質チェック、テスト生成、コードレビュー支援など、iOS チーム開発を包括的にサポートする Claude Code プラグイン群
-- **MCP サーバーの設定** — XcodeBuildMCP / xcodeproj-mcp-server の導入（ビルド・テスト実行・プロジェクト構造操作を AI エージェントから直接操作可能に）
-- **プロジェクト規約の初期設定** — CLAUDE.md、SwiftLint / SwiftFormat 設定ファイルなど
+- **ビルド可能な SwiftUI + MVVM のベースアプリ** — サンプル Feature Module 付きで、セットアップ直後にビルド・実行できる
+- **iOS 開発ツールの自動セットアップ** — XcodeGen、SwiftLint、SwiftFormat、Fastlane、Mint、gh CLI を一括インストール
+- **[ios-claude-plugins](https://github.com/inoue0124/ios-claude-plugins) の導入** — アーキテクチャガード、コード品質チェック、テスト生成、コードレビュー支援など 9 つのプラグイン
+- **MCP サーバーの設定** — XcodeBuildMCP / xcodeproj-mcp-server でビルド・テスト・プロジェクト操作を AI エージェントから直接実行可能に
+- **チーム開発の基盤** — GitHub テンプレート、CI ワークフロー、pre-commit hook、コーディング規約設定
 
 ## クイックスタート
+
+### 事前に必要なもの
+
+以下は setup.sh では自動インストールされません。事前にインストールしてください。
+
+| ツール | インストール方法 |
+|---|---|
+| macOS | — |
+| Xcode | App Store からインストール |
+| Homebrew | https://brew.sh |
+| Claude Code | `npm install -g @anthropic-ai/claude-code`（[公式ドキュメント](https://docs.anthropic.com/en/docs/claude-code)） |
+
+### セットアップ手順
 
 ```bash
 # 1. テンプレートをクローン
 git clone https://github.com/inoue0124/ios-agent-dev-template.git <your-project-name>
 cd <your-project-name>
 
-# 2. セットアップスクリプトを実行
+# 2. セットアップスクリプトを実行（ツールインストール・プロジェクト生成）
 ./scripts/setup.sh
 
-# 3. 開発スタート
+# 3. Xcode でプロジェクトを開く
+open *.xcodeproj
+
+# 4. AI エージェントと開発スタート
 claude
 ```
 
 ## セットアップスクリプトが行うこと
 
-`setup.sh` は以下を順に実行します。
+`scripts/setup.sh` は以下を順に実行します。
 
-1. **前提ツールの確認・インストール**
-   - Xcode（xcodebuild）
-   - Homebrew
+1. **開発ツールのインストール**（未インストールのもののみ）
    - XcodeGen（project.yml から .xcodeproj を生成）
    - Mint（Swift 製 CLI ツールのバージョン管理）
-   - SwiftLint / SwiftFormat
+   - SwiftLint / SwiftFormat（Mint 経由）
    - Fastlane（CI/CD 自動化・証明書管理・配信）
    - gh CLI（GitHub CLI）
-   - Node.js（MCP サーバー用）
-   - Docker（xcodeproj-mcp-server 用、オプション）
 
 2. **ios-claude-plugins のインストール**
-   - プラグインストアからのプラグイン一括追加
-   - 9 つのプラグイン（アーキテクチャガード、規約エンフォーサー、コード品質、テスト、GitHub ワークフロー、コードレビュー、オンボーディング、Feature Module 生成、配信）
+   - プラグインストアからのプラグイン一括追加（9 種）
 
 3. **MCP サーバーの設定**
    - XcodeBuildMCP — ビルド・テスト実行・シミュレータ操作
    - xcodeproj-mcp-server — Xcode プロジェクトファイル操作
 
-4. **プロジェクト初期ファイルの配置**
-   - CLAUDE.md（エージェントへの指示書）
-   - .swiftlint.yml / .swiftformat
-   - Mintfile（SwiftLint / SwiftFormat のバージョン固定）
-   - .gitignore
-   - GitHub テンプレート（Issue / PR）
-   - Git hooks（pre-commit）
+4. **プロジェクト生成**
+   - XcodeGen で project.yml から .xcodeproj を生成
+   - SPM パッケージの解決
+   - Git hooks のインストール
 
-## 前提条件
+> Node.js（XcodeBuildMCP 用）と Docker（xcodeproj-mcp-server 用）は必須ではありませんが、インストールされていない場合は警告を表示します。
 
-| ツール | 用途 | 必須 |
+## セットアップ後の開発ワークフロー
+
+セットアップ完了後、`claude` コマンドで AI エージェントと対話しながら開発を進められます。
+
+### 日常の開発フロー
+
+```
+claude で新機能の実装を依頼
+  ↓ アーキテクチャガード（ios-architecture）が MVVM 準拠を自動チェック
+  ↓ コード品質チェック（swift-code-quality）が lint / format を実行
+  ↓ テスト生成（swift-testing）がユニットテストを自動生成
+  ↓ コミット時に pre-commit hook が最終チェック
+  ↓ PR 作成時にレビュー支援（code-review-assist）が差分を分析
+```
+
+### よく使うコマンド例
+
+| やりたいこと | Claude への指示例 |
+|---|---|
+| 新しい Feature Module を追加 | 「ログイン画面の Feature Module を作って」 |
+| テストを書く | 「LoginViewModel のユニットテストを生成して」 |
+| コードレビュー | `/pr-review` |
+| PR を作成 | `/pr-create` |
+| アーキテクチャ監査 | `/arch-audit` |
+
+## ディレクトリ構成
+
+```
+<your-project-name>/
+├── Sources/
+│   ├── App/
+│   │   ├── App.swift                  # SwiftUI エントリポイント
+│   │   ├── ContentView.swift          # 初期画面
+│   │   └── Info.plist
+│   └── Features/
+│       └── Sample/                    # MVVM サンプル Feature Module
+│           ├── View/
+│           ├── ViewModel/
+│           ├── Model/
+│           └── Repository/
+├── Tests/
+│   └── SampleFeatureTests/
+├── scripts/
+│   ├── setup.sh                       # 初回セットアップ
+│   ├── clean.sh                       # キャッシュクリア
+│   ├── bootstrap.sh                   # 依存解決・プロジェクト再生成
+│   └── lint.sh                        # SwiftFormat + SwiftLint 一括実行
+├── fastlane/
+│   ├── Fastfile                       # レーン定義（build, test, beta）
+│   └── Appfile                        # App ID / Apple ID 設定
+├── .github/
+│   ├── ISSUE_TEMPLATE/
+│   │   ├── bug_report.md
+│   │   ├── feature_request.md
+│   │   └── task.md
+│   ├── PULL_REQUEST_TEMPLATE.md
+│   ├── workflows/
+│   │   └── ci.yml                     # PR 時の自動ビルド・テスト・lint
+│   └── dependabot.yml                 # SPM 依存の自動アップデート
+├── project.yml                        # XcodeGen プロジェクト定義
+├── Mintfile                           # SwiftLint / SwiftFormat バージョン固定
+├── CLAUDE.md                          # AI エージェントへの指示書
+├── .swiftlint.yml
+├── .swiftformat
+├── .editorconfig
+└── .gitignore
+```
+
+> サンプル Feature Module（`Sources/Features/Sample/`）は MVVM パターンの実装例です。新機能追加時の参考にしてください。
+
+## ユーティリティスクリプト
+
+`scripts/` ディレクトリに開発中に使うユーティリティスクリプトを用意しています。
+
+| スクリプト | 用途 | 実行タイミング |
 |---|---|---|
-| macOS | iOS 開発環境 | 必須 |
-| Xcode | ビルド・テスト実行 | 必須 |
-| Claude Code | AI エージェント CLI | 必須 |
-| Homebrew | パッケージ管理 | 必須 |
-| XcodeGen | project.yml から .xcodeproj を生成 | 必須（setup.sh で自動インストール） |
-| Mint | Swift 製 CLI ツールのバージョン管理 | 必須（setup.sh で自動インストール） |
-| SwiftLint | コード品質チェック | 必須（Mint で管理） |
-| SwiftFormat | コードフォーマット | 必須（Mint で管理） |
-| Fastlane | CI/CD 自動化・証明書管理・TestFlight 配信 | 必須（setup.sh で自動インストール） |
-| gh CLI | GitHub issue / PR 操作 | 必須（setup.sh で自動インストール） |
-| Node.js 18+ | XcodeBuildMCP の実行 | 推奨 |
-| Docker | xcodeproj-mcp-server の実行 | 推奨 |
+| `scripts/setup.sh` | 初回環境セットアップ | リポジトリクローン直後 |
+| `scripts/clean.sh` | キャッシュクリア + プロジェクト再生成 | ビルドがおかしい時 |
+| `scripts/bootstrap.sh` | Mint bootstrap → XcodeGen → SPM resolve | ブランチ切替後・依存更新時 |
+| `scripts/lint.sh` | SwiftFormat + SwiftLint 一括実行 | コミット前・CI |
+
+### scripts/clean.sh の対象
+
+- `~/Library/Developer/Xcode/DerivedData` — ビルドキャッシュ
+- `.build/` — SPM ローカルキャッシュ
+- `~/Library/Caches/org.swift.swiftpm` — SPM グローバルキャッシュ
+- `Package.resolved` の削除 + 再解決
+- `.xcodeproj` の再生成（XcodeGen）
 
 ## 導入されるプラグイン
 
@@ -91,39 +174,7 @@ claude
 | feature-module-gen | SwiftUI + MVVM の Feature Module 雛形一式生成 |
 | ios-distribution | TestFlight 配信・署名の自動化 |
 
-## ユーティリティスクリプト
-
-`scripts/` ディレクトリに開発中に使うユーティリティスクリプトを用意しています。
-
-| スクリプト | 用途 | 実行タイミング |
-|---|---|---|
-| `scripts/setup.sh` | 初回環境セットアップ（ツール確認・インストール・MCP 設定） | リポジトリクローン直後 |
-| `scripts/clean.sh` | キャッシュクリア + プロジェクト再生成 | ビルドがおかしい時 |
-| `scripts/bootstrap.sh` | Mint bootstrap → XcodeGen → SPM resolve | ブランチ切替後・依存更新時 |
-| `scripts/lint.sh` | SwiftFormat + SwiftLint 一括実行 | コミット前・CI |
-
-### scripts/clean.sh の対象
-
-- `~/Library/Developer/Xcode/DerivedData` — ビルドキャッシュ
-- `.build/` — SPM ローカルキャッシュ
-- `~/Library/Caches/org.swift.swiftpm` — SPM グローバルキャッシュ
-- `Package.resolved` の削除 + 再解決
-- `.xcodeproj` の再生成（XcodeGen）
-
-## テンプレートファイル
-
-クローン時に含まれるテンプレートファイル一覧。
-
-### GitHub テンプレート
-
-| ファイル | 内容 |
-|---|---|
-| `.github/ISSUE_TEMPLATE/bug_report.md` | バグ報告テンプレート |
-| `.github/ISSUE_TEMPLATE/feature_request.md` | 機能要望テンプレート |
-| `.github/ISSUE_TEMPLATE/task.md` | タスクテンプレート |
-| `.github/PULL_REQUEST_TEMPLATE.md` | PR テンプレート（変更概要・テスト計画・チェックリスト） |
-
-### Git hooks
+## Git hooks
 
 | フック | 内容 |
 |---|---|
@@ -133,16 +184,6 @@ claude
 > **ios-claude-plugins との役割分担について**
 >
 > ios-claude-plugins の `swift-code-quality` プラグインも SwiftLint / SwiftFormat を実行しますが、それは **Claude がコード編集中に品質を担保する**ためのものです。一方、pre-commit hook は **人間が手動でコミットする際のセーフティネット**として機能します。同じツールを使いますが実行タイミングと目的が異なるため、両方を併用する設計としています。
-
-### プロジェクト設定ファイル
-
-| ファイル | 内容 |
-|---|---|
-| `CLAUDE.md` | AI エージェントへの指示書（アーキテクチャ方針・コーディング規約） |
-| `Mintfile` | SwiftLint / SwiftFormat のバージョン固定 |
-| `.swiftlint.yml` | SwiftLint ルール設定 |
-| `.swiftformat` | SwiftFormat ルール設定 |
-| `.gitignore` | Xcode / SPM / DerivedData / Fastlane 等の除外設定 |
 
 ## ライセンス
 
