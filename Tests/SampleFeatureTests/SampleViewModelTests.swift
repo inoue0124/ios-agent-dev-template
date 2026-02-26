@@ -1,6 +1,7 @@
-import Testing
 @testable import App
+import Testing
 
+@MainActor
 struct SampleViewModelTests {
     @Test
     func addItem() async {

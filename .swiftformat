@@ -32,7 +32,6 @@
 
 # Blank lines
 --emptybraces no-space
---maxblanklines 1
 
 # Semicolons
 --semicolons inline
