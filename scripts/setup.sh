@@ -4,6 +4,9 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 
+# Prevent brew from running slow auto-update on every install
+export HOMEBREW_NO_AUTO_UPDATE=1
+
 # ============================================================
 # Colored logging
 # ============================================================
@@ -26,7 +29,10 @@ install_with_brew() {
     local name="${2:-$formula}"
     if ! check_command "$name"; then
         info "$name をインストールしています..."
-        brew install "$formula"
+        if ! brew install "$formula"; then
+            warn "$name のインストールに失敗しました。後で手動でインストールしてください。"
+            return 0
+        fi
         success "$name をインストールしました"
     fi
 }
@@ -46,7 +52,8 @@ info "=== 前提条件の確認 ==="
 if ! check_command xcodebuild; then
     error "Xcode がインストールされていません。App Store からインストールしてください。"
 fi
-xcodebuild -version | head -1
+# sed -n '1p' reads all input (no SIGPIPE), unlike head -1 which closes the pipe early
+xcodebuild -version 2>&1 | sed -n '1p'
 
 # Xcode Command Line Tools
 if ! xcode-select -p &>/dev/null; then
@@ -73,9 +80,12 @@ install_with_brew mint
 # SwiftLint / SwiftFormat via Mint
 cd "$PROJECT_DIR"
 if [ -f "Mintfile" ]; then
-    info "Mintfile から CLI ツールをインストールしています..."
-    mint bootstrap
-    success "Mint bootstrap 完了"
+    info "Mintfile から CLI ツールをインストールしています（初回はビルドに時間がかかります）..."
+    if mint bootstrap; then
+        success "Mint bootstrap 完了"
+    else
+        warn "Mint bootstrap に失敗しました。後で mint bootstrap を手動で実行してください。"
+    fi
 fi
 
 install_with_brew fastlane
@@ -84,14 +94,14 @@ install_with_brew gh
 # Optional: Node.js
 info "=== オプションツールの確認 ==="
 if check_command node; then
-    node --version
+    node --version || true
 else
     warn "Node.js が見つかりません。XcodeBuildMCP を利用する場合は brew install node でインストールしてください。"
 fi
 
 # Optional: Docker
 if check_command docker; then
-    docker --version
+    docker --version || true
 else
     warn "Docker が見つかりません。xcodeproj-mcp-server を利用する場合はインストールしてください。"
 fi
@@ -128,14 +138,26 @@ cd "$PROJECT_DIR"
 
 if [ -f "project.yml" ]; then
     info "XcodeGen でプロジェクトを生成しています..."
-    xcodegen generate
-    success "Xcode プロジェクトを生成しました"
+    if xcodegen generate; then
+        success "Xcode プロジェクトを生成しました"
+    else
+        warn "XcodeGen によるプロジェクト生成に失敗しました。project.yml を確認してください。"
+    fi
 else
     warn "project.yml が見つかりません。プロジェクト生成をスキップします。"
 fi
 
-info "SPM パッケージを解決しています..."
-xcodebuild -resolvePackageDependencies 2>/dev/null || warn "SPM パッケージ解決をスキップしました"
+# Resolve SPM packages only if a project file exists
+if ls "$PROJECT_DIR"/*.xcodeproj &>/dev/null; then
+    info "SPM パッケージを解決しています..."
+    if xcodebuild -resolvePackageDependencies; then
+        success "SPM パッケージ解決完了"
+    else
+        warn "SPM パッケージ解決に失敗しました。Xcode で手動解決してください。"
+    fi
+else
+    warn ".xcodeproj が見つからないため、SPM パッケージ解決をスキップします。"
+fi
 
 # ============================================================
 # 6. Git hooks installation
