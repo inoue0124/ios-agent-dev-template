@@ -10,7 +10,8 @@ platform :ios do
       scheme: ENV["SCHEME"] || "App",
       configuration: "Debug",
       build: true,
-      destination: "generic/platform=iOS Simulator"
+      destination: "generic/platform=iOS Simulator",
+      xcargs: "CODE_SIGNING_ALLOWED=NO"
     )
   end
 
@@ -22,7 +23,8 @@ platform :ios do
     run_tests(
       scheme: ENV["SCHEME"] || "App",
       device: "iPhone 16",
-      clean: true
+      clean: true,
+      xcargs: "CODE_SIGNING_ALLOWED=NO"
     )
   end
 

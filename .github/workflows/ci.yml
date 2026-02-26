@@ -35,32 +35,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install Mint
-        run: brew install mint
+      - name: Install tools
+        run: brew install mint xcodegen
 
       - name: Bootstrap tools
         run: mint bootstrap
-
-      - name: Install XcodeGen
-        run: brew install xcodegen
 
       - name: Generate Xcode project
         run: xcodegen generate
 
       - name: Build
-        run: |
-          xcodebuild build \
-            -project App.xcodeproj \
-            -scheme App \
-            -destination 'platform=iOS Simulator,name=iPhone 16' \
-            -configuration Debug \
-            CODE_SIGNING_ALLOWED=NO
+        run: fastlane build
 
       - name: Test
-        run: |
-          xcodebuild test \
-            -project App.xcodeproj \
-            -scheme AppTests \
-            -destination 'platform=iOS Simulator,name=iPhone 16' \
-            -configuration Debug \
-            CODE_SIGNING_ALLOWED=NO
+        run: fastlane test
