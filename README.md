@@ -73,7 +73,38 @@ claude
 
 セットアップ完了後、`claude` コマンドで AI エージェントと対話しながら開発を進められます。
 
-### 新機能の実装フロー（推奨）
+### 作るものがまだ決まっていない場合 — スペック駆動開発
+
+アイデアはあるが詳細が固まっていない段階では、スペック駆動開発スキルを使ってドキュメントから先に作成します。
+
+```
+1. docs/ideas/ にアイデアメモを置く（箇条書き・雑なメモでOK）
+2. /prd-writing でプロダクト要求定義書を作成（ユーザー承認あり）
+   ↓ 承認後、以下は自動で連鎖生成
+3. /functional-design で機能設計書を作成
+4. /architecture-design でアーキテクチャ設計書を作成
+5. /repository-structure でリポジトリ構造定義書を作成
+6. /development-guidelines で開発ガイドラインを作成
+7. /glossary-gen で用語集を作成
+```
+
+生成されたドキュメントは `docs/` 配下に配置されます。
+
+```
+docs/
+├── ideas/                      # 入力: アイデアメモ
+├── product-requirements.md     # Step 1: プロダクト要求定義書
+├── functional-design.md        # Step 2: 機能設計書
+├── architecture.md             # Step 3: アーキテクチャ設計書
+├── repository-structure.md     # Step 4: リポジトリ構造定義書
+├── development-guidelines.md   # Step 5: 開発ガイドライン
+├── glossary.md                 # Step 6: 用語集
+└── features/                   # フィーチャー単位の実装スペック
+```
+
+ドキュメントが揃ったら、`/implement-feature` でフィーチャー単位の実装に進みます。
+
+### 作るものが決まっている場合 — フィーチャー実装
 
 `/implement-feature` で要件定義から実装までをスペック駆動で一気通貫に進められます。
 
