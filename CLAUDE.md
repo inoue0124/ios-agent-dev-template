@@ -45,7 +45,7 @@ Conventional Commits に準拠:
 ```
 <type>(<scope>): <subject>
 
-type: feat, fix, docs, style, refactor, test, chore
+type: feat, fix, docs, style, refactor, test, chore, build, ci, perf, revert
 ```
 
 ## MCP サーバー
