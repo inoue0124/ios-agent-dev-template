@@ -106,15 +106,13 @@ if ! check_command docker; then
     fi
 fi
 
-SETTINGS_DIR="$PROJECT_DIR/.claude"
-SETTINGS_FILE="$SETTINGS_DIR/settings.json"
+MCP_FILE="$PROJECT_DIR/.mcp.json"
 
-# Skip if settings.json already contains mcpServers
-if [ -f "$SETTINGS_FILE" ] && grep -q '"mcpServers"' "$SETTINGS_FILE"; then
-    info ".claude/settings.json に既存の MCP 設定が見つかりました。スキップします。"
+# Skip if .mcp.json already contains mcpServers
+if [ -f "$MCP_FILE" ] && grep -q '"mcpServers"' "$MCP_FILE"; then
+    info ".mcp.json に既存の MCP 設定が見つかりました。スキップします。"
 else
-    mkdir -p "$SETTINGS_DIR"
-    cat > "$SETTINGS_FILE" << 'SETTINGS_EOF'
+    cat > "$MCP_FILE" << MCP_EOF
 {
   "mcpServers": {
     "XcodeBuildMCP": {
@@ -123,12 +121,12 @@ else
     },
     "xcodeproj": {
       "command": "docker",
-      "args": ["run", "--pull=always", "--rm", "-i", "-v", "$PWD:/workspace", "ghcr.io/giginet/xcodeproj-mcp-server:latest", "/workspace"]
+      "args": ["run", "--pull=always", "--rm", "-i", "-v", "$PROJECT_DIR:/workspace", "ghcr.io/giginet/xcodeproj-mcp-server:latest", "/workspace"]
     }
   }
 }
-SETTINGS_EOF
-    success "XcodeBuildMCP + xcodeproj を .claude/settings.json に設定しました"
+MCP_EOF
+    success "XcodeBuildMCP + xcodeproj を .mcp.json に設定しました"
 fi
 
 # ============================================================
