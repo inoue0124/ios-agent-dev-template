@@ -149,15 +149,8 @@ if check_command claude; then
     fi
 
     info "プラグインをインストールしています..."
-    MARKETPLACE_NAME="ios-claude-plugins"
-    PLUGINS=$(claude plugin list --available --json 2>/dev/null \
-        | jq -r ".available[] | select(.marketplaceName == \"$MARKETPLACE_NAME\") | .name" 2>/dev/null || true)
-    if [ -z "$PLUGINS" ]; then
-        warn "プラグイン一覧を動的取得できませんでした。既知のプラグインをインストールします。"
-        PLUGINS="ios-architecture team-conventions swift-code-quality swift-testing github-workflow code-review-assist ios-onboarding feature-module-gen ios-distribution feature-implementation spec-driven-dev"
-    fi
     PLUGIN_FAILED=false
-    for plugin in $PLUGINS; do
+    for plugin in ios-architecture team-conventions swift-code-quality swift-testing github-workflow code-review-assist ios-onboarding feature-module-gen ios-distribution feature-implementation; do
         if claude plugin install "$plugin" --scope project 2>/dev/null; then
             success "$plugin をインストールしました"
         else
