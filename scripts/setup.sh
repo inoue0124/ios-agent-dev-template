@@ -109,32 +109,13 @@ fi
 SETTINGS_DIR="$PROJECT_DIR/.claude"
 SETTINGS_FILE="$SETTINGS_DIR/settings.json"
 
-# Regenerate settings.json only if it is missing (e.g. deleted by user).
-# The repository ships a pre-configured .claude/settings.json that includes
-# mcpServers, enabledPlugins, and extraKnownMarketplaces.  When a user
-# trusts this project folder, Claude Code will auto-prompt to register the
-# ios-claude-plugins marketplace via extraKnownMarketplaces.
-if [ -f "$SETTINGS_FILE" ]; then
-    info ".claude/settings.json は既に存在します。スキップします。"
+# Skip if settings.json already contains mcpServers
+if [ -f "$SETTINGS_FILE" ] && grep -q '"mcpServers"' "$SETTINGS_FILE"; then
+    info ".claude/settings.json に既存の MCP 設定が見つかりました。スキップします。"
 else
     mkdir -p "$SETTINGS_DIR"
     cat > "$SETTINGS_FILE" << 'SETTINGS_EOF'
 {
-  "extraKnownMarketplaces": [
-    "inoue0124/ios-claude-plugins"
-  ],
-  "enabledPlugins": {
-    "ios-architecture@ios-claude-plugins": true,
-    "team-conventions@ios-claude-plugins": true,
-    "swift-code-quality@ios-claude-plugins": true,
-    "swift-testing@ios-claude-plugins": true,
-    "github-workflow@ios-claude-plugins": true,
-    "code-review-assist@ios-claude-plugins": true,
-    "ios-onboarding@ios-claude-plugins": true,
-    "feature-module-gen@ios-claude-plugins": true,
-    "ios-distribution@ios-claude-plugins": true,
-    "feature-implementation@ios-claude-plugins": true
-  },
   "mcpServers": {
     "XcodeBuildMCP": {
       "command": "npx",
@@ -147,11 +128,45 @@ else
   }
 }
 SETTINGS_EOF
-    success ".claude/settings.json を生成しました（MCP + プラグイン設定）"
+    success "XcodeBuildMCP + xcodeproj を .claude/settings.json に設定しました"
 fi
 
 # ============================================================
-# 4. Project generation
+# 4. ios-claude-plugins installation
+# ============================================================
+info "=== ios-claude-plugins ==="
+if check_command claude; then
+    info "ios-claude-plugins マーケットプレースを登録しています..."
+    if MP_OUTPUT=$(claude plugin marketplace add inoue0124/ios-claude-plugins 2>&1); then
+        success "マーケットプレースを登録しました"
+    elif echo "$MP_OUTPUT" | grep -q "already installed"; then
+        info "マーケットプレースは登録済みです"
+    else
+        warn "マーケットプレースの登録に失敗しました。Claude Code 内で以下を実行してください:"
+        echo ""
+        echo "  /plugin marketplace add inoue0124/ios-claude-plugins"
+        echo ""
+    fi
+
+    info "プラグインをインストールしています..."
+    PLUGIN_FAILED=false
+    for plugin in ios-architecture team-conventions swift-code-quality swift-testing github-workflow code-review-assist ios-onboarding feature-module-gen ios-distribution feature-implementation; do
+        if claude plugin install "$plugin" --scope project 2>/dev/null; then
+            success "$plugin をインストールしました"
+        else
+            warn "$plugin のインストールに失敗しました"
+            PLUGIN_FAILED=true
+        fi
+    done
+    if [ "$PLUGIN_FAILED" = true ]; then
+        warn "一部プラグインのインストールに失敗しました。Claude Code 内で /plugin marketplace add inoue0124/ios-claude-plugins を実行してください。"
+    fi
+else
+    warn "Claude Code が見つかりません。npm install -g @anthropic-ai/claude-code でインストールしてください。"
+fi
+
+# ============================================================
+# 5. Project generation
 # ============================================================
 info "=== プロジェクト生成 ==="
 cd "$PROJECT_DIR"
@@ -180,7 +195,7 @@ else
 fi
 
 # ============================================================
-# 5. Git hooks installation
+# 6. Git hooks installation
 # ============================================================
 info "=== Git hooks ==="
 if [ -d "$PROJECT_DIR/scripts/hooks" ]; then
