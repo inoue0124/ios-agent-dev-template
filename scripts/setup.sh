@@ -120,9 +120,14 @@ else
     mkdir -p "$SETTINGS_DIR"
     cat > "$SETTINGS_FILE" << 'SETTINGS_EOF'
 {
-  "extraKnownMarketplaces": [
-    "inoue0124/ios-claude-plugins"
-  ],
+  "extraKnownMarketplaces": {
+    "ios-claude-plugins": {
+      "source": {
+        "source": "github",
+        "repo": "inoue0124/ios-claude-plugins"
+      }
+    }
+  },
   "enabledPlugins": {
     "ios-architecture@ios-claude-plugins": true,
     "team-conventions@ios-claude-plugins": true,
