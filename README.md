@@ -57,7 +57,7 @@ claude
    - gh CLI（GitHub CLI）
 3. **MCP サーバーの自動セットアップ**
    - Node.js / Docker を自動インストール
-   - `.claude/settings.json` に XcodeBuildMCP / xcodeproj-mcp-server を設定
+   - `.mcp.json` に XcodeBuildMCP / xcodeproj-mcp-server を設定
 4. **ios-claude-plugins のインストール**
    - マーケットプレース登録 + 全10プラグインを自動インストール
 5. **プロジェクト生成**
