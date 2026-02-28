@@ -89,6 +89,18 @@ if [ -f "Mintfile" ]; then
 fi
 
 install_with_brew fastlane
+
+# Bundler / Gemfile
+if [ -f "$PROJECT_DIR/Gemfile" ]; then
+    info "Gemfile からRuby依存関係をインストールしています..."
+    cd "$PROJECT_DIR"
+    if bundle install; then
+        success "bundle install 完了"
+    else
+        warn "bundle install に失敗しました。後で手動で bundle install を実行してください。"
+    fi
+fi
+
 install_with_brew gh
 
 # ============================================================
